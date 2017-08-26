@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='yearonedb',
-      version='1.0.',
+      version='1.0.0',
       description='Hoard the mining',
       url='http://github.com/hyqLeonardo/yearonedb',
       author='Leonardo',

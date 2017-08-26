@@ -1,6 +1,8 @@
 import MySQLdb
 from sqlalchemy import create_engine
 
+import pandas as pd
+
 engine = create_engine('mysql+mysqldb://yearone:yearone@localhost:5432/factor_pool', echo=False)
 
 
