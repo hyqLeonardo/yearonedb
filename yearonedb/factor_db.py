@@ -24,11 +24,13 @@ def save_factor(factor_df, factor_name, save_mode='APPEND'):
     # get current metadata
     conn = engine.connect()
     metadata = MetaData(conn)
+
+    assert factor_df.index[0] <= factor_df.index[-1]
     # make a copy to modify, or the calling of method upon original df will go mad
     factor_df_copy = pd.DataFrame.copy(factor_df)
 
     if save_mode == 'APPEND':
-
+        print('appending to {} ...'.format(factor_name))
         # check if column has changes
         try:
             t = Table(factor_name, metadata, autoload=True)
@@ -75,6 +77,8 @@ def save_factor(factor_df, factor_name, save_mode='APPEND'):
             return
 
     if save_mode == 'REPLACE':
+        print('replacing {} ...'.format(factor_name))
+        # factor_df_copy.columns = ['S' + c.replace('.', '') for c in factor_df_copy.columns]
         factor_df_copy['index_col'] = factor_df_copy.index
         factor_df_copy.to_sql(name=factor_name, con=engine, if_exists='replace', index=False)
 
@@ -99,10 +103,12 @@ def get_factor(factor_name, order_book_ids, start_date, end_date=None):
         return
     col_db = [m.key for m in t.columns]
     col_intercept = list(set(col_db) & set(order_book_ids))
+    # use back ticks to assure sql will interpret this as column name
+    col_intercept = ['`' + c + '`' for c in col_intercept]
 
     if end_date is None:  # set today as end date
         end_date = str(datetime.date.today())
-    cols = 'index_col, ' + ', '.join(col_intercept)
+    cols = '`index_col`, ' + ', '.join(col_intercept)
 
     sql_str = 'SELECT {} FROM {} WHERE {} BETWEEN DATE(\'{}\') AND DATE(\'{}\')'.format(
         cols, factor_name, 'index_col', start_date, end_date)
